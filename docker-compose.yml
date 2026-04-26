@@ -1,0 +1,6 @@
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/python:3.11
+    volumes:
+      - .:/workspace:cached
+    network_mode: host
