@@ -1,2 +1,2 @@
-# canvas-pilot
+# Canvas Pilot
 An agentic vector engine that translates natural language into production-ready SVG geometry.
