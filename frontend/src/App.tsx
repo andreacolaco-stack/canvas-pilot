@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { Sparkles, Send, Loader2, Eraser } from 'lucide-react';
 
 interface Shape {
-  type: 'circle' | 'rectangle';
+  type: 'circle' | 'rectangle' | 'path' | 'line';
   id: string;
   color: string;
+  opacity?: number;
   // Dynamic properties based on type
   cx?: number; cy?: number; r?: number;
-  x?: number; y?: number; width?: number; height?: number;
+  x?: number; y?: number; width?: number; height?: number; rx: number;
+  d?: string;
+  x1?: number; y1?: number; x2?: number; y2?: number; stroke_width?: number; 
 }
 
 interface CanvasData {
@@ -15,6 +18,31 @@ interface CanvasData {
   height: number;
   shapes: Shape[];
 }
+
+const renderShape = (shape: Shape) => {
+  const commonProps = {
+    key: shape.id,
+    fill: shape.type === 'line' ? 'none' : shape.color,
+    stroke: shape.type === 'line' ? shape.color : 'none',
+    strokeWidth: shape.type === 'line' ? (shape.stroke_width || 2) : 0,
+    fillOpacity: shape.opacity ?? 1,
+    // The "Magic" Animation Class
+    className: "transition-all duration-700 ease-in-out hover:brightness-110 cursor-pointer"
+  };
+
+  switch (shape.type) {
+    case 'circle':
+      return <circle {...commonProps} cx={shape.cx} cy={shape.cy} r={shape.r} />;
+    case 'rectangle':
+      return <rect {...commonProps} x={shape.x} y={shape.y} width={shape.width} height={shape.height} rx={shape.rx} />;
+    case 'path':
+      return <path {...commonProps} d={shape.d} />;
+    case 'line':
+      return <line {...commonProps} x1={shape.x1} y1={shape.y1} x2={shape.x2} y2={shape.y2} />;
+    default:
+      return null;
+  }
+};
 
 function App() {
   const [prompt, setPrompt] = useState('');
@@ -29,6 +57,7 @@ function App() {
         method: 'POST',
       });
       const data = await response.json();
+      console.log("AI response data:", data);
       setCanvas(data);
     } catch (error) {
       console.error("AI Generation failed:", error);
@@ -92,29 +121,7 @@ function App() {
                 viewBox={`0 0 ${canvas.width} ${canvas.height}`}
                 className="rounded-xl bg-white"
               >
-                {canvas.shapes.map((shape) => {
-                  if (shape.type === 'circle') {
-                    return (
-                      <circle 
-                        key={shape.id} 
-                        cx={shape.cx} cy={shape.cy} r={shape.r} 
-                        fill={shape.color} 
-                        className="transition-all duration-700 ease-out"
-                      />
-                    );
-                  }
-                  if (shape.type === 'rectangle') {
-                    return (
-                      <rect 
-                        key={shape.id} 
-                        x={shape.x} y={shape.y} width={shape.width} height={shape.height} 
-                        fill={shape.color}
-                        className="transition-all duration-700 ease-out"
-                      />
-                    );
-                  }
-                  return null;
-                })}
+              {canvas.shapes.map(renderShape)}
               </svg>
             </div>
           </div>
